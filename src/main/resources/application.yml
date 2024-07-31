@@ -1,9 +1,26 @@
+# https://springdoc.org/#properties
+
 spring:
   activemq:
     packages:
       trust-all: true
     pool:
       max-connections: 500
+
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: false
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health
+  server:
+    port: 9090
 
 app:
   web-socket:
