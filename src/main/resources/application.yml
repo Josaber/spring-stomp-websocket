@@ -7,3 +7,12 @@ spring:
       trust-all: true
     pool:
       max-connections: 500
+
+app:
+  web-socket:
+    endpoint: /ws
+    channel: /topic/greetings
+    broker:
+      destination-prefix: /topic
+      host: localhost
+      port: 61616
