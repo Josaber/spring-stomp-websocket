@@ -37,7 +37,7 @@ class BaseIntegrationTests {
     protected static void assetFailure(CountDownLatch latch, AtomicReference<Throwable> failure, String failureMessage) throws InterruptedException {
         if (latch.await(3, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
-                throw new AssertionError("", failure.get());
+                throw new AssertionError(failureMessage, failure.get());
             }
         } else {
             fail(failureMessage);
@@ -81,6 +81,8 @@ class BaseIntegrationTests {
 
         private final Class<T> payloadType;
 
+        private final String destination;
+
         private final Consumer<T> assertion;
 
         private final Consumer<StompSession> execution;
@@ -89,18 +91,20 @@ class BaseIntegrationTests {
         public TestSessionFrameHandler(AtomicReference<Throwable> failure,
                                        CountDownLatch latch,
                                        Class<T> payloadType,
+                                       String destination,
                                        Consumer<T> assertion,
                                        Consumer<StompSession> execution) {
             super(failure);
             this.latch = latch;
             this.payloadType = payloadType;
+            this.destination = destination;
             this.assertion = assertion;
             this.execution = execution;
         }
 
         @Override
         public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-            session.subscribe("/topic/greetings", new StompFrameHandler() {
+            session.subscribe(destination, new StompFrameHandler() {
                 @Override
                 public Type getPayloadType(StompHeaders headers) {
                     return payloadType;
@@ -119,6 +123,7 @@ class BaseIntegrationTests {
                     }
                 }
             });
+
             try {
                 execution.accept(session);
             } catch (Throwable t) {

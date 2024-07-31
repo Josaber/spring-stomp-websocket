@@ -13,7 +13,7 @@ class GreetingIntegrationTests extends BaseIntegrationTests {
 
     @Test
     @DisplayName("should get greeting from subscription")
-    void should_get_greeting_from_subscription() throws Exception {
+    void should_get_greeting_from_subscription() throws InterruptedException {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();
@@ -22,6 +22,7 @@ class GreetingIntegrationTests extends BaseIntegrationTests {
                 failure,
                 latch,
                 Greeting.class,
+                "/topic/greetings",
                 greeting -> assertEquals("Hello, Spring!", greeting.content()),
                 session -> session.send("/app/hello", new HelloMessage("Spring"))
         );

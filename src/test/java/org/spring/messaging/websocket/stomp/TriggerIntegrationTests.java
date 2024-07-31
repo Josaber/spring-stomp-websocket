@@ -24,7 +24,7 @@ class TriggerIntegrationTests extends BaseIntegrationTests {
 
     @Test
     @DisplayName("should get greeting from trigger")
-    void should_get_greeting_from_trigger() throws Exception {
+    void should_get_greeting_from_trigger() throws InterruptedException {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();
@@ -33,6 +33,7 @@ class TriggerIntegrationTests extends BaseIntegrationTests {
                 failure,
                 latch,
                 Greeting.class,
+                "/topic/greetings",
                 greeting -> assertEquals("Hello, TRIGGER!", greeting.content()),
                 session -> {
                     try {
