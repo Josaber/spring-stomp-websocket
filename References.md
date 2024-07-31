@@ -16,6 +16,7 @@
 - [Stomp Brokers](https://stomp-js.github.io/stomp-websocket/codo/extra/docs-src/STOMP-brokers.md.html)
 - [Spring Stomp Client](https://docs.spring.io/spring-framework/reference/web/websocket/stomp/client.html)
   - Heartbeat
+- [SockJs Client Fallback](https://docs.spring.io/spring-framework/reference/web/websocket/fallback.html#websocket-fallback-sockjs-client)
 
 ## Security
 
