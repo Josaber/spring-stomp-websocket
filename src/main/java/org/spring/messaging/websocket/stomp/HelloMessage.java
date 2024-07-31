@@ -1,21 +1,9 @@
 package org.spring.messaging.websocket.stomp;
 
-public class HelloMessage {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-    private String name;
-
-    public HelloMessage() {
-    }
-
-    public HelloMessage(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record HelloMessage (
+        String name
+) {
 }

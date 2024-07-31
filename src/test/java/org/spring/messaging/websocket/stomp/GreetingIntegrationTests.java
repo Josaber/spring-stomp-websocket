@@ -33,7 +33,6 @@ class GreetingIntegrationTests {
     @LocalServerPort
     private int port;
 
-    // https://docs.spring.io/spring-framework/reference/web/websocket/stomp/client.html
     private WebSocketStompClient stompClient;
 
     @BeforeEach
@@ -63,7 +62,7 @@ class GreetingIntegrationTests {
                     public void handleFrame(StompHeaders headers, Object payload) {
                         Greeting greeting = (Greeting) payload;
                         try {
-                            assertEquals("Hello, Spring!", greeting.getContent());
+                            assertEquals("Hello, Spring!", greeting.content());
                         } catch (Throwable t) {
                             failure.set(t);
                         } finally {

@@ -1,18 +1,9 @@
 package org.spring.messaging.websocket.stomp;
 
-public class Greeting {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-    private String content;
-
-    public Greeting() {
-    }
-
-    public Greeting(String content) {
-        this.content = content;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record Greeting(
+        String content
+) {
 }

@@ -12,6 +12,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
+        // Redis doesn't support the STOMP protocol.
+        // https://stomp.github.io/implementations.html
         config.enableSimpleBroker("/topic");
         // enable a simple memory-based message broker
         // to carry the greeting messages back to the client on destinations prefixed with `/topic`
