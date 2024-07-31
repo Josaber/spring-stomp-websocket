@@ -51,7 +51,7 @@ class BaseIntegrationTests {
         this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
     }
 
-    protected static class TestSessionHandler extends StompSessionHandlerAdapter {
+    private static class TestSessionHandler extends StompSessionHandlerAdapter {
 
         protected final AtomicReference<Throwable> failure;
 
@@ -75,7 +75,7 @@ class BaseIntegrationTests {
         }
     }
 
-    protected static class TestSessionFrameHandler<T> extends TestSessionHandler {
+    protected static final class TestSessionFrameHandler<T> extends TestSessionHandler {
 
         private final CountDownLatch latch;
 
@@ -108,9 +108,9 @@ class BaseIntegrationTests {
 
                 @Override
                 public void handleFrame(StompHeaders headers, Object payload) {
-                    T payloadT = (T) payload;
+                    T message = (T) payload;
                     try {
-                        assertion.accept(payloadT);
+                        assertion.accept(message);
                     } catch (Throwable t) {
                         failure.set(t);
                     } finally {
