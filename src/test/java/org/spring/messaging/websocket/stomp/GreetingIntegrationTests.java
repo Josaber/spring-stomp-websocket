@@ -26,11 +26,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class GreetingIntegrationTests {
+class GreetingIntegrationTests {
 
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+
     @LocalServerPort
     private int port;
+
+    // https://docs.spring.io/spring-framework/reference/web/websocket/stomp/client.html
     private WebSocketStompClient stompClient;
 
     @BeforeEach
@@ -41,7 +44,7 @@ public class GreetingIntegrationTests {
     }
 
     @Test
-    public void getGreeting() throws Exception {
+    void getGreeting() throws Exception {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();

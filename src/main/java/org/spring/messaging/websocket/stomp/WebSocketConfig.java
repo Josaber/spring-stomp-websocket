@@ -13,12 +13,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic");
+        // enable a simple memory-based message broker
+        // to carry the greeting messages back to the client on destinations prefixed with `/topic`
         config.setApplicationDestinationPrefixes("/app");
+        // designates the `/app` prefix for messages that are bound for methods annotated with `@MessageMapping`
+        // `/app/hello`
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/gs-guide-websocket");
+        registry.addEndpoint("/gs-guide-websocket")
+                .setAllowedOrigins("*");
     }
 
 }
