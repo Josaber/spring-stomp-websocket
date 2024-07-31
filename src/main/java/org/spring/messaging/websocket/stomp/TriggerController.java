@@ -22,7 +22,7 @@ public class TriggerController {
     }
 
     @PostMapping("message")
-    @Operation(summary = "Trigger Hello Message")
+    @Operation(summary = "Trigger Hello Message"/*, security = @SecurityRequirement(name = "bearerAuth")*/)
     public Greeting sendFiles() {
         log.info("WebSocket message triggered");
         Greeting greeting = new Greeting("Hello, TRIGGER!");

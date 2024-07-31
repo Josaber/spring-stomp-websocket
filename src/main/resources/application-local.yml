@@ -1,0 +1,11 @@
+spring:
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: artemis
+    password: artemis
+
+app:
+  web-socket:
+    broker:
+      host: localhost
+      port: 61616
