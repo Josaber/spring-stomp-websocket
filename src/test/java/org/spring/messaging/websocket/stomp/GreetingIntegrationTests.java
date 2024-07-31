@@ -1,16 +1,9 @@
 package org.spring.messaging.websocket.stomp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.lang.reflect.Type;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -22,98 +15,102 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.boot.test.web.server.LocalServerPort;
+
+import java.lang.reflect.Type;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class GreetingIntegrationTests {
 
-	@LocalServerPort
-	private int port;
+    private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+    @LocalServerPort
+    private int port;
+    private WebSocketStompClient stompClient;
 
-	private WebSocketStompClient stompClient;
+    @BeforeEach
+    public void setup() {
+        WebSocketClient webSocketClient = new StandardWebSocketClient();
+        this.stompClient = new WebSocketStompClient(webSocketClient);
+        this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+    }
 
-	private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+    @Test
+    public void getGreeting() throws Exception {
 
-	@BeforeEach
-	public void setup() {
-		WebSocketClient webSocketClient = new StandardWebSocketClient();
-		this.stompClient = new WebSocketStompClient(webSocketClient);
-		this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-	}
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
 
-	@Test
-	public void getGreeting() throws Exception {
+        StompSessionHandler handler = new TestSessionHandler(failure) {
 
-		final CountDownLatch latch = new CountDownLatch(1);
-		final AtomicReference<Throwable> failure = new AtomicReference<>();
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                session.subscribe("/topic/greetings", new StompFrameHandler() {
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {
+                        return Greeting.class;
+                    }
 
-		StompSessionHandler handler = new TestSessionHandler(failure) {
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        Greeting greeting = (Greeting) payload;
+                        try {
+                            assertEquals("Hello, Spring!", greeting.getContent());
+                        } catch (Throwable t) {
+                            failure.set(t);
+                        } finally {
+                            session.disconnect();
+                            latch.countDown();
+                        }
+                    }
+                });
+                try {
+                    session.send("/app/hello", new HelloMessage("Spring"));
+                } catch (Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            }
+        };
 
-			@Override
-			public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-				session.subscribe("/topic/greetings", new StompFrameHandler() {
-					@Override
-					public Type getPayloadType(StompHeaders headers) {
-						return Greeting.class;
-					}
+        this.stompClient.connectAsync("ws://localhost:{port}/gs-guide-websocket", this.headers, handler, this.port);
 
-					@Override
-					public void handleFrame(StompHeaders headers, Object payload) {
-						Greeting greeting = (Greeting) payload;
-						try {
-							assertEquals("Hello, Spring!", greeting.getContent());
-						} catch (Throwable t) {
-							failure.set(t);
-						} finally {
-							session.disconnect();
-							latch.countDown();
-						}
-					}
-				});
-				try {
-					session.send("/app/hello", new HelloMessage("Spring"));
-				} catch (Throwable t) {
-					failure.set(t);
-					latch.countDown();
-				}
-			}
-		};
+        if (latch.await(3, TimeUnit.SECONDS)) {
+            if (failure.get() != null) {
+                throw new AssertionError("", failure.get());
+            }
+        } else {
+            fail("Greeting not received");
+        }
 
-		this.stompClient.connectAsync("ws://localhost:{port}/gs-guide-websocket", this.headers, handler, this.port);
+    }
 
-		if (latch.await(3, TimeUnit.SECONDS)) {
-			if (failure.get() != null) {
-				throw new AssertionError("", failure.get());
-			}
-		}
-		else {
-			fail("Greeting not received");
-		}
+    private static class TestSessionHandler extends StompSessionHandlerAdapter {
 
-	}
+        private final AtomicReference<Throwable> failure;
 
-	private static class TestSessionHandler extends StompSessionHandlerAdapter {
+        public TestSessionHandler(AtomicReference<Throwable> failure) {
+            this.failure = failure;
+        }
 
-		private final AtomicReference<Throwable> failure;
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            this.failure.set(new Exception(headers.toString()));
+        }
 
-		public TestSessionHandler(AtomicReference<Throwable> failure) {
-			this.failure = failure;
-		}
+        @Override
+        public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
+            this.failure.set(ex);
+        }
 
-		@Override
-		public void handleFrame(StompHeaders headers, Object payload) {
-			this.failure.set(new Exception(headers.toString()));
-		}
-
-		@Override
-		public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
-			this.failure.set(ex);
-		}
-
-		@Override
-		public void handleTransportError(StompSession session, Throwable ex) {
-			this.failure.set(ex);
-		}
-	}
+        @Override
+        public void handleTransportError(StompSession session, Throwable ex) {
+            this.failure.set(ex);
+        }
+    }
 }
