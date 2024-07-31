@@ -6,9 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.spring.messaging.websocket.stomp.config.WebSocketProperties;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("ws")
+@RestController
+@RequestMapping("websocket")
 public class TriggerController {
     private static final Logger log = LoggerFactory.getLogger(TriggerController.class);
 
